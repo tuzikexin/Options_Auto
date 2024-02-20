@@ -1,0 +1,6 @@
+Pyarrow
+pandas
+numpy
+requests
+requests_html
+pytz
