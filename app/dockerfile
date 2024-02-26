@@ -1,0 +1,24 @@
+# Use an official Python runtime as a parent image
+FROM python:3.11-slim
+
+# Set the working directory in the container
+# WORKDIR /usr/src/app
+WORKDIR /app
+
+# Copy the requirements file into the container at /usr/src/app
+COPY requirements.txt .
+
+# Install any needed packages specified in requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the code to the container
+COPY ./ .
+
+# Make script executable
+RUN chmod +x ./src/opt_download.py
+
+# Set default arguments for the entrypoint
+ENTRYPOINT ["python", "./src/opt_download.py"]
+
+# Set default arguments for the entrypoint
+CMD ["--ticker", "VIX", "--end_time_h", "22", "--end_time_m", "45", "--test_mode", "no"]

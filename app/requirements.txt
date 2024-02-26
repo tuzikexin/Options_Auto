@@ -4,3 +4,4 @@ numpy
 requests
 requests_html
 pytz
+yfinance
