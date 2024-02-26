@@ -19,7 +19,9 @@ if [ $? -eq 0 ]; then
 
     # Run the Docker container with specified arguments
     echo "Running Docker container..."
-    docker run --rm -v /Users/kexin/Desktop/xiaoyu/app/:/app/ --name temp-container ${IMAGE_NAME}:${IMAGE_TAG} --ticker VIX --end_time_h 23 --end_time_m 59 --test_mode yes
+    SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+    echo "Script directory: $SCRIPT_DIR"
+    docker run --rm -v $SCRIPT_DIR:/app/ --name temp-container ${IMAGE_NAME}:${IMAGE_TAG} --ticker VIX --end_time_h 23 --end_time_m 59 --test_mode yes
 
     # Check if the Docker container ran successfully
     if [ $? -eq 0 ]; then

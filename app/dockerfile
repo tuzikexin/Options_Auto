@@ -6,13 +6,13 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Copy the requirements file into the container at /usr/src/app
-COPY requirements.txt .
+COPY requirements.txt /app/requirements.txt
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the code to the container
-COPY ./ .
+COPY ./ /app/.
 
 # Make script executable
 RUN chmod +x ./src/opt_download.py
