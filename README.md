@@ -21,7 +21,7 @@ mkdir credentials  # credentials.json upload to here
 # crontab for daily job
 crontab -e
     # if the Docker container down, restart it
-    */5 * * * 1-5 raw_source_path/daily_stop_docker.sh >> /tmp/cron_test.log 2>&1
+    */5 * * * 1-5 raw_source_path/daily_restart_docker.sh >> /tmp/cron_test.log 2>&1
     
     # Start the Docker container at NY 8:55 AM on weekdays
     55 15 * * 1-5 raw_source_path/daily_run_docker.sh >> /tmp/cron_test.log 2>&1
