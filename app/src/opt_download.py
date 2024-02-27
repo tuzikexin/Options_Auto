@@ -9,6 +9,7 @@ import logging
 from pytz import timezone
 import argparse
 import math
+from google_upload import upload_single_file_to_folder
 from utils import str2bool, CETFormatter
 
 
@@ -28,7 +29,8 @@ args = parser.parse_args()
 # =====================  Create a logger
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-handler = logging.FileHandler(os.path.join('./data/raw_data', 'download_yahoo_finance.log'))
+handler = logging.FileHandler(
+    os.path.join('./data/raw_data', f"download_yahoo_{datetime.now(timezone('CET')).strftime('%Y%m%d')}.log"))
 handler.setFormatter(CETFormatter('%(asctime)s | %(levelname)s | %(message)s', '%Y-%m-%d %H:%M:%S'))
 logger.addHandler(handler)
 # Prevent the logger from propagating messages to the root logger
@@ -74,9 +76,12 @@ def download_data(ticker, url_base, expiry_dates, output_dir):
         # save to csv
         all_df = pd.concat(all_df)
         exchange_time = str(datetime.now(timezone('America/Chicago')))[:19].replace(':', '-')
-        all_df.to_csv(os.path.join(output_dir, f'{ticker}_opt_{exchange_time}.csv'), index=False)
+        data_name = f'{ticker}_opt_{exchange_time}'
+        data_zip_path = os.path.join(output_dir, f'{data_name}.zip')
+        all_df.to_csv(data_zip_path, index=False, compression={'method': 'zip', "archive_name" :f'{data_name}.csv'})
+        return data_zip_path
 
-def download_options(ticker='VIX', end_time_h=22, end_time_m=45, test_mode=False, freq_in_seconds=60):
+def download_options(output_dir, ticker='VIX', end_time_h=22, end_time_m=45, test_mode=False, freq_in_seconds=60):
     """Main function to download options data."""
 
     # check the ending time
@@ -95,8 +100,11 @@ def download_options(ticker='VIX', end_time_h=22, end_time_m=45, test_mode=False
     expiry_dates = [line for line in expiry_dates if line != '']
     session.close()
 
-    output_dir = setup_directories()
-    download_data(ticker, url_base, expiry_dates, output_dir)
+    data_zip_path = download_data(ticker, url_base, expiry_dates, output_dir)
+    upload_single_file_to_folder(os.path.basename(data_zip_path), data_zip_path)
+    t = f"upload {os.path.basename(data_zip_path)} to drive"
+    print(t)
+    logger.info(t)
 
     if test_mode:
         print('Test mode only download once')
@@ -105,11 +113,15 @@ def download_options(ticker='VIX', end_time_h=22, end_time_m=45, test_mode=False
     # Schedule the next run
     next_run = (datetime.now(timezone('CET')) + timedelta(seconds=freq_in_seconds)).replace(microsecond=0)
     wait_time = (next_run - datetime.now(timezone('CET'))).total_seconds()    
-    Timer(wait_time, download_options, [ticker, end_time_h, end_time_m, test_mode, freq_in_seconds]).start()
+    Timer(wait_time, download_options, [output_dir, ticker, end_time_h, end_time_m, test_mode, freq_in_seconds]).start()
+    return None
 
 
 if __name__ == "__main__":
-    print('Download scheduled. Check the logs for details.')
+    output_dir = setup_directories()
     exec_day = str(datetime.now(timezone('CET')))[:19].replace(':', '-')
-    logger.info(f'========== Download started from {exec_day} ==========')
-    download_options(args.ticker, args.end_time_h, args.end_time_m, args.test_mode)
+    t = f'========== Download started from {exec_day} =========='
+    print(t)
+    logger.info(t)
+    
+    download_options(output_dir, args.ticker, args.end_time_h, args.end_time_m, args.test_mode)
