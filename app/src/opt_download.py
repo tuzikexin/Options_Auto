@@ -25,17 +25,6 @@ parser.add_argument('--test_mode', type=str2bool, default=False, help='Whether t
 # Parse the arguments
 args = parser.parse_args()
 
-
-# =====================  Create a logger
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = logging.FileHandler(
-    os.path.join('./data/raw_data', f"download_yahoo_{datetime.now(timezone('CET')).strftime('%Y%m%d')}.log"))
-handler.setFormatter(CETFormatter('%(asctime)s | %(levelname)s | %(message)s', '%Y-%m-%d %H:%M:%S'))
-logger.addHandler(handler)
-# Prevent the logger from propagating messages to the root logger
-logger.propagate = False
-
 # ===================== Download options
 def setup_directories(base_dir='./data/raw_data'):
     """Ensure the output directory exists."""
@@ -118,7 +107,19 @@ def download_options(output_dir, ticker='VIX', end_time_h=22, end_time_m=45, tes
 
 
 if __name__ == "__main__":
+    # make dir
     output_dir = setup_directories()
+
+    # =====================  Create a logger
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    handler = logging.FileHandler(
+        os.path.join('./data/raw_data', f"download_yahoo_{datetime.now(timezone('CET')).strftime('%Y%m%d')}.log"))
+    handler.setFormatter(CETFormatter('%(asctime)s | %(levelname)s | %(message)s', '%Y-%m-%d %H:%M:%S'))
+    logger.addHandler(handler)
+    # Prevent the logger from propagating messages to the root logger
+    logger.propagate = False
+
     exec_day = str(datetime.now(timezone('CET')))[:19].replace(':', '-')
     t = f'========== Download started from {exec_day} =========='
     print(t)
