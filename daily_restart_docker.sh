@@ -23,7 +23,7 @@ if [ "$current_hour" -ge "$start_time" ] && [ "$current_hour" -le "$end_time" ];
         if [ $(ls -A $credentials_folder | wc -l) -eq 0 ]; then
             echo "credentials directory is empty."
         else
-            docker run --rm -v $credentials_folder:/app/credentials/ --name daily-vis-container tuzikexin/${IMAGE_NAME}:${IMAGE_TAG}  --ticker VIX --end_time_h 22 --end_time_m 45 --test_mode no
+            docker run --rm -v $credentials_folder:/app/credentials/ --name daily-vis-container tuzikexin/option_auto_download:latest  --ticker VIX --end_time_h 22 --end_time_m 45 --test_mode no
         fi
     fi
 fi
