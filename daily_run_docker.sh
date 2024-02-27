@@ -7,15 +7,18 @@ IMAGE_NAME="option_auto_download"
 IMAGE_TAG="latest"
 
 if [ $? -eq 0 ]; then
+    # Get the credentials directory
     current_dir=$(pwd)
     credentials_f="credentials"
     credentials_folder="$current_dir/$credentials_f"
-    # Get the credentials directory
-    credentials_f="credentials"
-    credentials_folder="$current_dir/$credentials_f"
-    echo 'credentials path:' $credentials_folder
-    docker run --rm -v $credentials_folder:/app/credentials/ --name daily-vis-container tuzikexin/${IMAGE_NAME}:${IMAGE_TAG}  --ticker VIX --end_time_h 22 --end_time_m 45 --test_mode no
+    echo 'credentials file path:' $credentials_folder
 
+    if [ -f $credentials_folder ]; then
+        docker run --rm -v $credentials_folder:/app/credentials/ --name daily-vis-container tuzikexin/${IMAGE_NAME}:${IMAGE_TAG}  --ticker VIX --end_time_h 22 --end_time_m 45 --test_mode no
+    else
+        echo "credentials file does not exist."
+    fi
+    
     # Check if the Docker container ran successfully
     if [ $? -eq 0 ]; then
         echo "Container ran successfully."

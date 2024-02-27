@@ -1,7 +1,11 @@
+# credentials
+credentials/
+
 # data
 data/*
 *.csv
 *.log
+*.zip
 
 #VScode
 .vscode/

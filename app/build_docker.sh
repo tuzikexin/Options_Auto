@@ -21,7 +21,13 @@ if [ $? -eq 0 ]; then
     parent_dir=$(dirname "$current_dir")
     credentials_f="credentials"
     credentials_folder="$parent_dir/$credentials_f"
-    docker run --rm -v $credentials_folder:/app/credentials/ --name temp-vix-container tuzikexin/${IMAGE_NAME}:${IMAGE_TAG} --ticker VIX --end_time_h 23 --end_time_m 59 --test_mode yes
+    echo 'credentials file path:' $credentials_folder
+
+    if [ -f $credentials_folder ]; then
+        docker run --rm -v $credentials_folder:/app/credentials/ --name temp-vix-container tuzikexin/${IMAGE_NAME}:${IMAGE_TAG} --ticker VIX --end_time_h 23 --end_time_m 59 --test_mode yes
+    else
+        echo "credentials file does not exist."
+    fi
 
     # Check if the Docker container ran successfully
     if [ $? -eq 0 ]; then
