@@ -26,7 +26,7 @@ if [ $? -eq 0 ]; then
     if [ $(ls -A $credentials_folder | wc -l) -eq 0 ]; then
         echo "credentials directory is empty."
     else
-        docker run --rm -v $credentials_folder:/app/credentials/ --name temp-vix-container tuzikexin/${IMAGE_NAME}:${IMAGE_TAG} --ticker VIX --end_time_h 23 --end_time_m 59 --test_mode yes
+        docker run --rm -v $credentials_folder:/app/credentials/ --name temp-vix-container tuzikexin/${IMAGE_NAME}:${IMAGE_TAG} --ticker VIX --end_time_h 16 --end_time_m 5 --test_mode yes
 
         # Check if the Docker container ran successfully
         if [ $? -eq 0 ]; then

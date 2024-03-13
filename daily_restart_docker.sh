@@ -1,14 +1,21 @@
 #!/bin/bash
 
-# Get the current hour
-current_hour=$(date +%H)
+start_hour=21   # this the beijing time
+start_minute=28
+end_hour=4
+end_minute=5
 
-# Define the start and end time
-start_time=15
-end_time=23
+# Get the current hour and minute
+current_hour=$(date +'%H')  # Current hour in 24-hour format
+current_minute=$(date +'%M')  # Current minute
+
+# Convert times to minutes for easier comparison
+start_time_minutes=$((start_hour * 60 + start_minute))
+end_time_minutes=$((end_hour * 60 + end_minute))
+current_time_minutes=$((10#$current_hour * 60 + 10#$current_minute))  # Force base 10
 
 # Check if the current time is within the desired range
-if [ "$current_hour" -ge "$start_time" ] && [ "$current_hour" -le "$end_time" ]; then
+if [ "$current_time_minutes" -ge "$start_time_minutes" ] && [ "$current_time_minutes" -le "$end_time_minutes" ]; then
     echo "Current time is within the range."
 
     # Check if the "option_download" container is running
@@ -23,7 +30,7 @@ if [ "$current_hour" -ge "$start_time" ] && [ "$current_hour" -le "$end_time" ];
         if [ $(ls -A $credentials_folder | wc -l) -eq 0 ]; then
             echo "credentials directory is empty."
         else
-            docker run --rm -v $credentials_folder:/app/credentials/ --name daily-vis-container tuzikexin/option_auto_download:latest  --ticker VIX --end_time_h 22 --end_time_m 45 --test_mode no
+            docker run --rm -v $credentials_folder:/app/credentials/ --name daily-vis-container tuzikexin/option_auto_download:latest  --ticker VIX --end_time_h 16 --end_time_m 5 --test_mode no
         fi
     fi
 fi

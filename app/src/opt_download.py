@@ -18,8 +18,8 @@ parser = argparse.ArgumentParser(description='Download options data for a given 
 
 # Add the arguments
 parser.add_argument('--ticker', type=str, default='VIX', help='Ticker symbol for the options data')
-parser.add_argument('--end_time_h', type=int, default=22, help='Hour of the day to end downloading (0-23, in CET timezone)')
-parser.add_argument('--end_time_m', type=int, default=45, help='Minute of the hour to end downloading (0-59, in CET timezone)')
+parser.add_argument('--end_time_h', type=int, default=16, help='Hour of the day to end downloading (0-23, in America/New_York timezone)')
+parser.add_argument('--end_time_m', type=int, default=5, help='Minute of the hour to end downloading (0-59, in America/New_York timezone)')
 parser.add_argument('--test_mode', type=str2bool, default=False, help='Whether to run the code in test mode or not')
 
 # Parse the arguments
@@ -28,7 +28,7 @@ args = parser.parse_args()
 # ===================== Download options
 def setup_directories(base_dir='./data/raw_data'):
     """Ensure the output directory exists."""
-    today = datetime.now(timezone('CET')).strftime('%Y%m%d')
+    today = datetime.now(timezone('America/New_York')).strftime('%Y%m%d')
     output_dir = os.path.join(base_dir, today)
     os.makedirs(output_dir, exist_ok=True)
     return output_dir
@@ -74,10 +74,10 @@ def download_options(output_dir, ticker='VIX', end_time_h=22, end_time_m=45, tes
     """Main function to download options data."""
 
     # check the ending time
-    end_time = datetime.now(timezone('CET'))
+    end_time = datetime.now(timezone('America/New_York'))
     end_time = datetime(year=end_time.year, month=end_time.month, day=end_time.day, 
                         hour=end_time_h, minute=end_time_m, second=0)
-    if int(math.ceil(datetime.now(timezone('CET')).timestamp())) >= int(end_time.timestamp()):
+    if int(math.ceil(datetime.now(timezone('America/New_York')).timestamp())) >= int(end_time.timestamp()):
         logger.info(f'======= Ending scheduled downloads for {ticker} as the end time{end_time} has been reached.')
         return None
     
@@ -100,8 +100,8 @@ def download_options(output_dir, ticker='VIX', end_time_h=22, end_time_m=45, tes
         return None
     
     # Schedule the next run
-    next_run = (datetime.now(timezone('CET')) + timedelta(seconds=freq_in_seconds)).replace(microsecond=0)
-    wait_time = (next_run - datetime.now(timezone('CET'))).total_seconds()    
+    next_run = (datetime.now(timezone('America/New_York')) + timedelta(seconds=freq_in_seconds)).replace(microsecond=0)
+    wait_time = (next_run - datetime.now(timezone('America/New_York'))).total_seconds()    
     Timer(wait_time, download_options, [output_dir, ticker, end_time_h, end_time_m, test_mode, freq_in_seconds]).start()
     return None
 
@@ -114,13 +114,13 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
     handler = logging.FileHandler(
-        os.path.join('./data/raw_data', f"download_yahoo_{datetime.now(timezone('CET')).strftime('%Y%m%d')}.log"))
+        os.path.join('./data/raw_data', f"download_yahoo_{datetime.now(timezone('America/New_York')).strftime('%Y%m%d')}.log"))
     handler.setFormatter(CETFormatter('%(asctime)s | %(levelname)s | %(message)s', '%Y-%m-%d %H:%M:%S'))
     logger.addHandler(handler)
     # Prevent the logger from propagating messages to the root logger
     logger.propagate = False
 
-    exec_day = str(datetime.now(timezone('CET')))[:19].replace(':', '-')
+    exec_day = str(datetime.now(timezone('America/New_York')))[:19].replace(':', '-')
     t = f'========== Download started from {exec_day} =========='
     print(t)
     logger.info(t)

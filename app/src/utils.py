@@ -19,7 +19,7 @@ def str2bool(v):
 
 class CETFormatter(logging.Formatter):
     # Custom log formatter to include CET timezone
-    cet = timezone('CET')
+    cet = timezone('America/New_York')
 
     def converter(self, timestamp):
         return datetime.fromtimestamp(timestamp, self.cet)
