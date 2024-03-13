@@ -30,6 +30,7 @@ if [ "$current_time_minutes" -ge "$start_time_minutes" ] && [ "$current_time_min
         if [ $(ls -A $credentials_folder | wc -l) -eq 0 ]; then
             echo "credentials directory is empty."
         else
+            echo "restart the docker"
             docker run --rm -v $credentials_folder:/app/credentials/ --name daily-vis-container tuzikexin/option_auto_download:latest  --ticker VIX --end_time_h 16 --end_time_m 5 --test_mode no
         fi
     else 
