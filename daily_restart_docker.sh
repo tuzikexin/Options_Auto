@@ -16,7 +16,7 @@ current_time_minutes=$((10#$current_hour * 60 + 10#$current_minute))  # Force ba
 
 # Check if the current time is within the desired range
 if [ "$current_time_minutes" -ge "$start_time_minutes" ] && [ "$current_time_minutes" -le "$end_time_minutes" ]; then
-    echo "Current time is within the range."
+    # echo "Current time is within the range."
 
     # Check if the "option_download" container is running
     if ! docker ps | grep -q "daily-vis-container"; then
