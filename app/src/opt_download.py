@@ -75,10 +75,9 @@ def download_options(output_dir, ticker='VIX', end_time_h=22, end_time_m=45, tes
 
     # check the ending time
     end_time = datetime.now(timezone('America/New_York'))
-    end_time = datetime(year=end_time.year, month=end_time.month, day=end_time.day, 
-                        hour=end_time_h, minute=end_time_m, second=0)
+    end_time = end_time.replace(hour=end_time_h, minute=end_time_m)
     if int(math.ceil(datetime.now(timezone('America/New_York')).timestamp())) >= int(end_time.timestamp()):
-        logger.info(f'======= Ending scheduled downloads for {ticker} as the end time{end_time} has been reached.')
+        logger.info(f'======= Ending scheduled downloads for {ticker} as the end time {end_time} has been reached.')
         return None
     
     # download options
