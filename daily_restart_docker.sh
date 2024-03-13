@@ -32,5 +32,7 @@ if [ "$current_time_minutes" -ge "$start_time_minutes" ] && [ "$current_time_min
         else
             docker run --rm -v $credentials_folder:/app/credentials/ --name daily-vis-container tuzikexin/option_auto_download:latest  --ticker VIX --end_time_h 16 --end_time_m 5 --test_mode no
         fi
+    else 
+        echo "docker is running"
     fi
 fi
