@@ -76,14 +76,14 @@ def download_options(output_dir, tickers=['VIX','SPX'], end_time_h=22, end_time_
     end_time = datetime.now(timezone('America/New_York'))
     end_time = end_time.replace(hour=end_time_h, minute=end_time_m)
     if int(math.ceil(datetime.now(timezone('America/New_York')).timestamp())) >= int(end_time.timestamp()):
-        logger.info(f'======= Ending scheduled downloads for {ticker} as the end time {end_time} has been reached.')
+        logger.info(f'======= Ending scheduled downloads for {tickers} as the end time {end_time} has been reached.')
         return None
     
     if len(tickers)>1:
         for ticker in tickers:
             download_single_option(output_dir, ticker)
     else:
-        download_single_option(output_dir, ticker)
+        download_single_option(output_dir, tickers[0])
 
     if test_mode:
         print('Test mode only download once')
