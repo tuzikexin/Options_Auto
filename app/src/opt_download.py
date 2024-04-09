@@ -16,8 +16,7 @@ from utils import str2bool, CETFormatter
 # ===================== Initialize the parser
 parser = argparse.ArgumentParser(description='Download options data for a given ticker up to a specified end time.')
 
-# Add the arguments
-parser.add_argument('--ticker', type=str, default='VIX', help='Ticker symbol for the options data')
+parser.add_argument('--tickers', type=str, nargs='+', default=['VIX', 'SPX'], help='Ticker symbols for the options data, separated by spaces.')
 parser.add_argument('--end_time_h', type=int, default=16, help='Hour of the day to end downloading (0-23, in America/New_York timezone)')
 parser.add_argument('--end_time_m', type=int, default=5, help='Minute of the hour to end downloading (0-59, in America/New_York timezone)')
 parser.add_argument('--test_mode', type=str2bool, default=False, help='Whether to run the code in test mode or not')
@@ -89,7 +88,7 @@ def download_options(output_dir, ticker='VIX', end_time_h=22, end_time_m=45, tes
     session.close()
 
     data_zip_path = download_data(ticker, url_base, expiry_dates, output_dir)
-    upload_single_file_to_folder(os.path.basename(data_zip_path), data_zip_path)
+    upload_single_file_to_folder(os.path.basename(data_zip_path), data_zip_path, ticker)
     t = f"upload {os.path.basename(data_zip_path)} to drive"
     print(t)
     logger.info(t)
@@ -124,4 +123,5 @@ if __name__ == "__main__":
     print(t)
     logger.info(t)
     
-    download_options(output_dir, args.ticker, args.end_time_h, args.end_time_m, args.test_mode)
+    for ticker in args.tickers:
+        download_options(output_dir, ticker, args.end_time_h, args.end_time_m, args.test_mode)

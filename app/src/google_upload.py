@@ -5,6 +5,11 @@ from pathlib import Path
 import os
 import zipfile
 
+# The folder ID in the URL when open the folder in Google Drive; it's the string after folders/.
+GOODLE_FOLD_ID = {"vix":"1LhowxgyWvOZlyVnRBDwPeoefyUHPjWZ0",
+                  "spx":"1p-Et5f3o91EASW69Bks0sHXUflqEWcRq",
+                  "test":"1QYWfVQbqGiohqp8bgtUEThdeiMG7xiLu"}
+
 # Get the absolute path of the current file
 root_path = Path(os.path.abspath(__file__)).parent.parent
 credentials_path = Path(root_path, 'credentials/yaofugui_permission_service_account.json')
@@ -30,28 +35,14 @@ def create_service():
     service = build('drive', 'v3', credentials=credentials)
     return service
 
-def upload_single_file_to_folder(filename, filepath,  folder_id='1LhowxgyWvOZlyVnRBDwPeoefyUHPjWZ0'):
+
+def upload_single_file_to_folder(filename, filepath,  ticker:str):
     service = create_service()
+    folder_id = GOODLE_FOLD_ID[ticker.strip().lower()]
     file_metadata = {
         'name': filename,
         'parents': [folder_id]
     }
     media = MediaFileUpload(filepath)
     file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-
-def upload_file_to_google(directory_to_zip):    
-    # Compressed file 
-    folder_name = os.path.basename(directory_to_zip)
-    zip_file_name = f'{folder_name}.zip'
-    zip_file_path = Path(str(Path(directory_to_zip).parent), zip_file_name)
-    compress_folder(directory_to_zip, zip_file_path)
-
-    # The folder ID in the URL when open the folder in Google Drive; it's the string after folders/.
-    drive_folder_id = '1LhowxgyWvOZlyVnRBDwPeoefyUHPjWZ0'
-
-    # Then, upload the ZIP file
-    upload_single_file_to_folder(zip_file_name, zip_file_path, drive_folder_id)
-
-# def test():
-#     p = Path('/Users/kexin/Desktop/xiaoyu/app/data/raw_data/20240226')
-#     upload_file_to_google(p)
+    return None
