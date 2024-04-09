@@ -21,4 +21,4 @@ RUN chmod +x ./src/opt_download.py
 ENTRYPOINT ["python", "./src/opt_download.py"]
 
 # Set default arguments for the entrypoint
-CMD ["--ticker", "VIX", "--end_time_h", "22", "--end_time_m", "45", "--test_mode", "no"]
+CMD ["--ticker", "VIX SPX", "--end_time_h", "22", "--end_time_m", "45", "--test_mode", "no"]
