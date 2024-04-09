@@ -4,7 +4,6 @@
 time_to_minutes() {
     hour=$(echo $1 | cut -d: -f1)
     minute=$(echo $1 | cut -d: -f2)
-    echo $((hour * 60 + minute))
 }
 
 # Get current time and date
