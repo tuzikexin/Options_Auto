@@ -69,7 +69,7 @@ def download_data(ticker, url_base, expiry_dates, output_dir):
         all_df.to_csv(data_zip_path, index=False, compression={'method': 'zip', "archive_name" :f'{data_name}.csv'})
         return data_zip_path
 
-def download_options(output_dir, ticker='VIX', end_time_h=22, end_time_m=45, test_mode=False, freq_in_seconds=60):
+def download_options(output_dir, tickers=['VIX','SPX'], end_time_h=22, end_time_m=45, test_mode=False, freq_in_seconds=60):
     """Main function to download options data."""
 
     # check the ending time
@@ -79,7 +79,24 @@ def download_options(output_dir, ticker='VIX', end_time_h=22, end_time_m=45, tes
         logger.info(f'======= Ending scheduled downloads for {ticker} as the end time {end_time} has been reached.')
         return None
     
-    # download options
+    if len(tickers)>1:
+        for ticker in tickers:
+            download_single_option(output_dir, ticker)
+    else:
+        download_single_option(output_dir, ticker)
+
+    if test_mode:
+        print('Test mode only download once')
+        return None
+    
+    # Schedule the next run
+    next_run = (datetime.now(timezone('America/New_York')) + timedelta(seconds=freq_in_seconds)).replace(microsecond=0)
+    wait_time = (next_run - datetime.now(timezone('America/New_York'))).total_seconds()    
+    Timer(wait_time, download_options, [output_dir, tickers, end_time_h, end_time_m, test_mode, freq_in_seconds]).start()
+    return None
+
+def download_single_option(output_dir, ticker='VIX'):
+    # download single option
     url_base = f'https://finance.yahoo.com/quote/%5E{ticker}/options'
     session = HTMLSession()
     response = session.get(url_base)
@@ -92,17 +109,6 @@ def download_options(output_dir, ticker='VIX', end_time_h=22, end_time_m=45, tes
     t = f"upload {os.path.basename(data_zip_path)} to drive"
     print(t)
     logger.info(t)
-
-    if test_mode:
-        print('Test mode only download once')
-        return None
-    
-    # Schedule the next run
-    next_run = (datetime.now(timezone('America/New_York')) + timedelta(seconds=freq_in_seconds)).replace(microsecond=0)
-    wait_time = (next_run - datetime.now(timezone('America/New_York'))).total_seconds()    
-    Timer(wait_time, download_options, [output_dir, ticker, end_time_h, end_time_m, test_mode, freq_in_seconds]).start()
-    return None
-
 
 if __name__ == "__main__":
     # make dir
@@ -123,5 +129,4 @@ if __name__ == "__main__":
     print(t)
     logger.info(t)
     
-    for ticker in args.tickers:
-        download_options(output_dir, ticker, args.end_time_h, args.end_time_m, args.test_mode)
+    download_options(output_dir, args.tickers, args.end_time_h, args.end_time_m, args.test_mode)
