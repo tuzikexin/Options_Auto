@@ -31,8 +31,8 @@ if [ $? -eq 0 ]; then
         # Check if the Docker container ran successfully
         if [ $? -eq 0 ]; then
             echo "Container ran successfully. and push to dockerhub"
-            # docker tag ${IMAGE_NAME}:${IMAGE_TAG} tuzikexin/${IMAGE_NAME}:${IMAGE_TAG}
-            # docker login
+            docker tag ${IMAGE_NAME}:${IMAGE_TAG} tuzikexin/${IMAGE_NAME}:${IMAGE_TAG}
+            docker login
             docker push tuzikexin/${IMAGE_NAME}:${IMAGE_TAG}
 
             # Remove Dangling Images
