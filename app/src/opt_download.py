@@ -8,7 +8,6 @@ from io import StringIO
 import logging
 from pytz import timezone
 import argparse
-import math
 from google_upload import upload_single_file_to_folder
 from utils import str2bool, CETFormatter
 
@@ -17,6 +16,8 @@ from utils import str2bool, CETFormatter
 parser = argparse.ArgumentParser(description='Download options data for a given ticker up to a specified end time.')
 
 parser.add_argument('--tickers', type=str, nargs='+', default=['VIX', 'SPX'], help='Ticker symbols for the options data, separated by spaces.')
+parser.add_argument('--start_time_h', type=int, default=8, help='Hour of the day to start downloading (0-23, in America/New_York timezone)')
+parser.add_argument('--start_time_m', type=int, default=55, help='Minute of the hour to start downloading (0-59, in America/New_York timezone)')
 parser.add_argument('--end_time_h', type=int, default=16, help='Hour of the day to end downloading (0-23, in America/New_York timezone)')
 parser.add_argument('--end_time_m', type=int, default=5, help='Minute of the hour to end downloading (0-59, in America/New_York timezone)')
 parser.add_argument('--test_mode', type=str2bool, default=False, help='Whether to run the code in test mode or not')
@@ -69,24 +70,23 @@ def download_data(ticker, url_base, expiry_dates, output_dir):
         all_df.to_csv(data_zip_path, index=False, compression={'method': 'zip', "archive_name" :f'{data_name}.csv'})
         return data_zip_path
 
-def download_options(output_dir, tickers=['VIX','SPX'], end_time_h=22, end_time_m=45, test_mode=False, freq_in_seconds=60):
+def download_options(output_dir, tickers=['VIX','SPX'], end_time_h=16, end_time_m=5, test_mode=False, freq_in_seconds=60):
     """Main function to download options data."""
 
     # check the ending time
-    end_time = datetime.now(timezone('America/New_York'))
-    end_time = end_time.replace(hour=end_time_h, minute=end_time_m)
-    if int(math.ceil(datetime.now(timezone('America/New_York')).timestamp())) >= int(end_time.timestamp()):
+    end_time = datetime.now(timezone('America/New_York')).replace(hour=end_time_h, minute=end_time_m, second=0, microsecond=0)
+    if datetime.now(timezone('America/New_York')) >= end_time:
         logger.info(f'======= Ending scheduled downloads for {tickers} as the end time {end_time} has been reached.')
         return None
     
-    if len(tickers)>1:
+    if len(tickers) > 1:
         for ticker in tickers:
             download_single_option(output_dir, ticker)
     else:
         download_single_option(output_dir, tickers[0])
 
     if test_mode:
-        print('Test mode only download once')
+        print('======= Ending Test mode only download once')
         return None
     
     # Schedule the next run
@@ -110,6 +110,19 @@ def download_single_option(output_dir, ticker='VIX'):
     print(t)
     logger.info(t)
 
+def schedule_start(download_func, output_dir, tickers, start_time_h, start_time_m, end_time_h, end_time_m, test_mode, freq_in_seconds):
+    """Schedules the start of the download function."""
+    now = datetime.now(timezone('America/New_York'))
+    start_time = now.replace(hour=start_time_h, minute=start_time_m, second=0, microsecond=0)
+
+    if now >= start_time:
+        logger.info(f'Starting download at {now}')
+        download_func(output_dir, tickers, end_time_h, end_time_m, test_mode, freq_in_seconds)
+    else:
+        wait_time = (start_time - now).total_seconds()
+        logger.info(f'Scheduling download to start at {start_time} (in {wait_time} seconds)')
+        Timer(wait_time, download_func, [output_dir, tickers, end_time_h, end_time_m, test_mode, freq_in_seconds]).start()
+
 if __name__ == "__main__":
     # make dir
     output_dir = setup_directories()
@@ -129,4 +142,4 @@ if __name__ == "__main__":
     print(t)
     logger.info(t)
     
-    download_options(output_dir, args.tickers, args.end_time_h, args.end_time_m, args.test_mode)
+    schedule_start(download_options, output_dir, args.tickers, args.start_time_h, args.start_time_m, args.end_time_h, args.end_time_m, args.test_mode, 60)
