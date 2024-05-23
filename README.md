@@ -13,7 +13,7 @@ git clone https://github.com/tuzikexin/Options_Auto.git
 ### loacal credentials for google drive
 download the credentials json file from yaofugui google drive.
 ~~~
-cd Options_Auto
+cd Options_Auto/app
 mkdir credentials   # credentials.json upload to here
 ~~~
 ## option 1: Run with Python(Windows)
@@ -23,7 +23,7 @@ To run the script with the given arguments every day on a Windows machine, you c
 
 First, create a batch file that will execute your Python script with the required arguments.
 
-1. Open use_python_daily_download.bat file.
+1. Open windown_python_daily_download.bat file.
 2. Enter the following command, replacing the placeholders with your actual paths and arguments:
 
 ```batch
@@ -54,7 +54,7 @@ cd "C:\path\to\your\script"
 5. **Set Actions**:
    - Go to the Actions tab and click `New...`.
    - Set the action to "Start a program".
-   - In the "Program/script" field, enter the path to your batch file (e.g., `C:\path\to\your\use_python_daily_download.bat`).
+   - In the "Program/script" field, enter the path to your batch file (e.g., `C:\path\to\your\windows_python_daily_download.bat`).
    - Click `OK` to save the action.
 
 6. **Set Conditions** (optional):

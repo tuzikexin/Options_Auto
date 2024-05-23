@@ -3,6 +3,8 @@ pandas
 numpy
 requests
 requests_html
+selenium 
+webdriver-manager
 pytz
 yfinance
 google-api-python-client
