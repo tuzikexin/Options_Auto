@@ -22,7 +22,7 @@ import time
 parser = argparse.ArgumentParser(description='Download options data for a given ticker up to a specified end time.')
 
 parser.add_argument('--tickers', type=str, nargs='+', default=['VIX', 'SPX'], help='Ticker symbols for the options data, separated by spaces.')
-parser.add_argument('--start_time_h', type=int, default=8, help='Hour of the day to start downloading (0-23, in America/New_York timezone)')
+parser.add_argument('--start_time_h', type=int, default=4, help='Hour of the day to start downloading (0-23, in America/New_York timezone)')
 parser.add_argument('--start_time_m', type=int, default=55, help='Minute of the hour to start downloading (0-59, in America/New_York timezone)')
 parser.add_argument('--end_time_h', type=int, default=16, help='Hour of the day to end downloading (0-23, in America/New_York timezone)')
 parser.add_argument('--end_time_m', type=int, default=5, help='Minute of the hour to end downloading (0-59, in America/New_York timezone)')
@@ -91,8 +91,23 @@ def get_expiry_day(url_base):
     expiry_dates = []
     # Setup Selenium WebDriver
     options = Options()
-    options.add_argument("--start-maximized")
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    options.add_argument("--headless")  # Run in headless mode
+    options.add_argument("--disable-gpu")  # Disable GPU
+    options.add_argument("--no-sandbox")  # Bypass OS security model
+    options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+    options.add_argument("--remote-debugging-port=9222")  # Enable remote debugging
+
+    # options.add_argument("--start-maximized")
+    # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options) 
+    
+    # Manually specify the path to ChromeDriver
+    # wget https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip
+    # unzip chromedriver_linux64.zip
+    # sudo mv chromedriver /usr/local/bin/
+    # sudo chmod +x /usr/local/bin/chromedriver
+    driver = webdriver.Chrome(executable_path='/usr/local/bin/chromedriver', options=options)
+
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager(version=chrome_driver_version).install()), options=options)
 
     # Open the webpage
     driver.get(url_base)
