@@ -91,21 +91,23 @@ def get_expiry_day(url_base):
     expiry_dates = []
     # Setup Selenium WebDriver
     options = Options()
-    # options.add_argument("--headless")  # Run in headless mode
-    # options.add_argument("--disable-gpu")  # Disable GPU
+    # options.add_argument("--start-maximized")  # ensures that the browser window opens in a maximized state
+
+    options.add_argument("--headless")  # Run in headless mode
+    options.add_argument("--disable-gpu")  # Disable GPU
     options.add_argument("--no-sandbox")  # Bypass OS security model
     options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
     options.add_argument("--remote-debugging-port=9222")  # Enable remote debugging
 
-    # options.add_argument("--start-maximized")  # ensures that the browser window opens in a maximized state
-    # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options) 
+    # this is for MAC or ChromeDriverManager can find correct version
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options) 
     
-    # Manually specify the path to ChromeDriver
-    # wget https://storage.googleapis.com/chrome-for-testing-public/125.0.6422.78/linux64/chromedriver-linux64.zip
-    # unzip chromedriver-linux64.zip
-    # sudo mv chromedriver /usr/local/bin/
-    # sudo chmod +x /usr/local/bin/chromedriver
-    driver = webdriver.Chrome(executable_path='/usr/local/bin/chromedriver', options=options)
+    # Manually specify the path to ChromeDriver / or in Linux ChromeDriverManager can't find correct version
+    ## wget https://storage.googleapis.com/chrome-for-testing-public/125.0.6422.78/linux64/chromedriver-linux64.zip
+    ## unzip chromedriver-linux64.zip
+    ## sudo mv chromedriver /usr/local/bin/
+    ## sudo chmod +x /usr/local/bin/chromedriver
+    # driver = webdriver.Chrome(executable_path='/usr/local/bin/chromedriver', options=options)
 
     # Open the webpage
     driver.get(url_base)
