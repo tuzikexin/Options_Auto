@@ -16,16 +16,19 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import time
 
 # ===================== Initialize the parser
 parser = argparse.ArgumentParser(description='Download options data for a given ticker up to a specified end time.')
 
 parser.add_argument('--tickers', type=str, nargs='+', default=['VIX', 'SPX'], help='Ticker symbols for the options data, separated by spaces.')
-parser.add_argument('--start_time_h', type=int, default=8, help='Hour of the day to start downloading (0-23, in America/New_York timezone)')
-parser.add_argument('--start_time_m', type=int, default=55, help='Minute of the hour to start downloading (0-59, in America/New_York timezone)')
+parser.add_argument('--start_time_h', type=int, default=0, help='Hour of the day to start downloading (0-23, in America/New_York timezone)')
+parser.add_argument('--start_time_m', type=int, default=1, help='Minute of the hour to start downloading (0-59, in America/New_York timezone)')
 parser.add_argument('--end_time_h', type=int, default=23, help='Hour of the day to end downloading (0-23, in America/New_York timezone)')
-parser.add_argument('--end_time_m', type=int, default=55, help='Minute of the hour to end downloading (0-59, in America/New_York timezone)')
+parser.add_argument('--end_time_m', type=int, default=59, help='Minute of the hour to end downloading (0-59, in America/New_York timezone)')
 parser.add_argument('--test_mode', type=str2bool, default=False, help='Whether to run the code in test mode or not')
 
 # Parse the arguments
@@ -38,7 +41,6 @@ def setup_directories(base_dir='./data/raw_data'):
     output_dir = os.path.join(base_dir, today)
     os.makedirs(output_dir, exist_ok=True)
     return output_dir
-
 
 
 def schedule_start(download_func, output_dir, tickers, start_time_h, start_time_m, end_time_h, end_time_m, test_mode, freq_in_seconds):
@@ -54,29 +56,38 @@ def schedule_start(download_func, output_dir, tickers, start_time_h, start_time_
         logger.info(f'Scheduling download to start at {start_time} (in {wait_time} seconds)')
         Timer(wait_time, download_func, [output_dir, tickers, end_time_h, end_time_m, test_mode, freq_in_seconds]).start()
 
+
 def find_and_click_expire_button(driver, retries=2):
     """
     Function to find and click the expire button
     """
     attempts = 0
     while attempts < retries:
-        # Find the container with the class name 'container svelte-1ur89ri'
-        container = driver.find_element(By.CLASS_NAME, 'container.svelte-1ur89ri')
+        try:
+            # Wait for the container to be present
+            container = WebDriverWait(driver, 3).until(
+                EC.presence_of_element_located((By.CLASS_NAME, 'container.svelte-1ur89ri'))
+            )
+            # Extract the subelements with aria-haspopup='listbox'
+            aria_elements = container.find_elements(By.XPATH, ".//*[@aria-haspopup='listbox']")
 
-        # Extract the subelements with aria-haspopup='listbox'
-        aria_elements = container.find_elements(By.XPATH, ".//*[@aria-haspopup='listbox']")
+            # Filter out the aria_elements which aria-label is in ["All Strike Prices", "List", "All Options"]
+            filtered_elements = [element for element in aria_elements if element.get_attribute('aria-label') not in ["All Strike Prices", "List", "All Options"]]
 
-        # Filter out the aria_elements which aria-label is in ["All Strike Prices", "List", "All Options"]
-        filtered_elements = [element for element in aria_elements if element.get_attribute('aria-label') not in ["All Strike Prices", "List", "All Options"]]
+            # If no elements are found, retry
+            if len(filtered_elements) > 0:
+                # Click the expire_button
+                expire_button = filtered_elements[0]
+                expire_button.click()
+                return True
+            else:
+                logger.info(f"Attempt {attempts + 1} failed: No elements found. Retrying...")
+                attempts += 1
+                driver.refresh()
+                time.sleep(3)  # Wait for the page to reload
 
-        # If no elements are found, retry
-        if len(filtered_elements) > 0:
-            # Click the expire_button
-            expire_button = filtered_elements[0]
-            expire_button.click()
-            return True
-        else:
-            logger.info(f"Attempt {attempts + 1} failed: No elements found. Retrying...")
+        except (TimeoutException, NoSuchElementException) as e:
+            logger.info(f"Attempt {attempts + 1} failed: {e}. Retrying...")
             attempts += 1
             driver.refresh()
             time.sleep(3)  # Wait for the page to reload
@@ -100,14 +111,14 @@ def get_expiry_day(url_base):
     options.add_argument("--remote-debugging-port=9222")  # Enable remote debugging
 
     # this is for MAC or ChromeDriverManager can find correct version
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options) 
+    # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options) 
     
     # Manually specify the path to ChromeDriver / or in Linux ChromeDriverManager can't find correct version
     ## wget https://storage.googleapis.com/chrome-for-testing-public/125.0.6422.78/linux64/chromedriver-linux64.zip
     ## unzip chromedriver-linux64.zip
     ## sudo mv chromedriver /usr/local/bin/
     ## sudo chmod +x /usr/local/bin/chromedriver
-    # driver = webdriver.Chrome(executable_path='/usr/local/bin/chromedriver', options=options)
+    driver = webdriver.Chrome(executable_path='/usr/local/bin/chromedriver', options=options)
 
     # Open the webpage
     driver.get(url_base)
